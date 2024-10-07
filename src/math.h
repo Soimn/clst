@@ -93,13 +93,13 @@ V2S_Hadamard(V2S a, V2S b)
 }
 
 static V2S
-V2S_Scale(V2S v, f32 n)
+V2S_Scale(V2S v, s32 n)
 {
 	return V2S(v.x*n, v.y*n);
 }
 
 static V2S
-V2S_ScaleRes(V2S v, f32 n)
+V2S_ScaleRes(V2S v, s32 n)
 {
 	return V2S(v.x/n, v.y/n);
 }

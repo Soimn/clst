@@ -12,6 +12,8 @@
 #undef near
 
 #include <math.h>
+#include <stdarg.h>
+#include <stdio.h>
 #include <intrin.h>
 
 typedef signed __int8  s8;
@@ -30,8 +32,24 @@ typedef u8 bool;
 
 typedef float f32;
 
+#define ARRAY_SIZE(A) (sizeof(A)/sizeof(0[A]))
+
 #include "math.h"
 
+bool Running = false;
+
+void
+ErrorBox(char* format, ...)
+{
+  char buffer[1024];
+
+  va_list args;
+  va_start(args, format);
+  vsnprintf(buffer, ARRAY_SIZE(buffer), format, args);
+  va_end(args);
+
+  MessageBoxA(0, buffer, "Error", MB_OK | MB_ICONERROR);
+}
 
 LRESULT
 Wndproc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -40,6 +58,7 @@ Wndproc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
 
 	if (msg == WM_QUIT || msg == WM_CLOSE)
 	{
+    Running = false;
 		result = 0;
 	}
 	else if (msg == WM_PAINT)
@@ -64,14 +83,33 @@ WinMain(HINSTANCE instance, HINSTANCE prev_instance, LPSTR cmd_line, int show_cm
 		.cbClsExtra    = 0,
 		.cbWndExtra    = 0,
 		.hInstance     = instance,
-		.hIcon         = ,
-		.hCursor       = ,
-		.hbrBackground = ,
-		.lpszMenuName  = ,
-		.lpszClassName = ,
+		.hIcon         = 0,
+		.hCursor       = 0,
+		.hbrBackground = 0,
+		.lpszMenuName  = 0,
+		.lpszClassName = "CLST",
 	};
 
-	RegisterClassA(window_class);
+  HWND window;
+	if (!RegisterClassA(&window_class) ||
+      !(window = CreateWindowA("CLST", "CLST", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, 0, 0)))
+  {
+    //// ERROR
+    ErrorBox("Failed to create window");
+  }
+  else
+  {
+    ShowWindow(window, SW_SHOW);
+
+    Running = true;
+    while (Running)
+    {
+      for (MSG msg; PeekMessageA(&msg, 0, 0, 0, PM_REMOVE);)
+      {
+        Wndproc(window, msg.message, msg.wParam, msg.lParam);
+      }
+    }
+  }
 
 	return 0;
 }
